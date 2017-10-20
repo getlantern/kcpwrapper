@@ -5,12 +5,7 @@ import (
 	"time"
 
 	"github.com/getlantern/cmux"
-	"github.com/getlantern/golog"
 	"github.com/xtaci/kcp-go"
-)
-
-var (
-	log = golog.LoggerFor("kcplistener")
 )
 
 // ListenerConfig configures listening

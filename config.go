@@ -10,13 +10,18 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/getlantern/golog"
 	kcp "github.com/xtaci/kcp-go"
 	"golang.org/x/crypto/pbkdf2"
 )
 
-var (
+const (
 	// SALT is use for pbkdf2 key expansion
 	SALT = "kcp-go"
+)
+
+var (
+	log = golog.LoggerFor("kcpwrapper")
 )
 
 // CommonConfig contains common configuration parameters across dialers and
