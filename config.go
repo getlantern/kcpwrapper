@@ -1,8 +1,7 @@
-// the contents of this file is taken from github.com/xtaci/kcptun
-
 // Package kcpwrapper provides a wrapper around kcp that allows the use of
-// regular net interfaces like dialing and listening. A lot of the logic is
-// based on logic in github.com/xtaci/kcptun.
+// regular net interfaces like dialing and listening. It is built to be
+// compatible with servers and clients running github.com/xtaci/kcptun and
+// duplicates some of the code from that project.
 package kcpwrapper
 
 import (

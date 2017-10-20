@@ -32,9 +32,26 @@ func Listen(cfg *ListenerConfig) (net.Listener, error) {
 		log.Errorf("Error setting WriteBuffer: %v", err)
 	}
 
+	var listener net.Listener = l
+	if !cfg.NoComp {
+		listener = &snappyListener{l}
+	}
+
 	return cmux.Listen(&cmux.ListenOpts{
-		Listener:          l,
+		Listener:          listener,
 		BufferSize:        cfg.SockBuf,
 		KeepAliveInterval: time.Duration(cfg.KeepAlive) * time.Second,
 	}), nil
+}
+
+type snappyListener struct {
+	net.Listener
+}
+
+func (l *snappyListener) Accept() (net.Conn, error) {
+	conn, err := l.Listener.Accept()
+	if err != nil {
+		return conn, err
+	}
+	return wrapSnappy(conn), err
 }
