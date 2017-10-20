@@ -22,16 +22,6 @@ type DialerConfig struct {
 func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (net.Conn, error) {
 	cfg.applyDefaults()
 
-	log.Debugf("encryption: %v", cfg.Crypt)
-	log.Debugf("nodelay parameters: %v,%v,%v,%v", cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion)
-	log.Debugf("sndwnd: %v    recvwnd: %v", cfg.SndWnd, cfg.RcvWnd)
-	log.Debugf("compression: %v", !cfg.NoComp)
-	log.Debugf("mtu: %v", cfg.MTU)
-	log.Debugf("datashard: %v   parityshard: %v", cfg.DataShard, cfg.ParityShard)
-	log.Debugf("acknodelay: %v", cfg.AckNodelay)
-	log.Debugf("dscp: %v", cfg.DSCP)
-	log.Debugf("sockbuf: %v", cfg.SockBuf)
-	log.Debugf("keepalive: %v", cfg.KeepAlive)
 	log.Debugf("conn: %v", cfg.Conn)
 	log.Debugf("autoexpire: %v", cfg.AutoExpire)
 	log.Debugf("scavengettl: %v", cfg.ScavengeTTL)

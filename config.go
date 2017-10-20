@@ -46,47 +46,58 @@ type CommonConfig struct {
 	block        kcp.BlockCrypt
 }
 
-func (config *CommonConfig) applyDefaults() {
+func (cfg *CommonConfig) applyDefaults() {
 	rand.Seed(int64(time.Now().Nanosecond()))
-	switch config.Mode {
+	switch cfg.Mode {
 	case "normal":
-		config.NoDelay, config.Interval, config.Resend, config.NoCongestion = 0, 40, 2, 1
+		cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion = 0, 40, 2, 1
 	case "fast":
-		config.NoDelay, config.Interval, config.Resend, config.NoCongestion = 0, 30, 2, 1
+		cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion = 0, 30, 2, 1
 	case "fast2":
-		config.NoDelay, config.Interval, config.Resend, config.NoCongestion = 1, 20, 2, 1
+		cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion = 1, 20, 2, 1
 	case "fast3":
-		config.NoDelay, config.Interval, config.Resend, config.NoCongestion = 1, 10, 2, 1
+		cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion = 1, 10, 2, 1
 	}
 
-	pass := pbkdf2.Key([]byte(config.Key), []byte(SALT), 4096, 32, sha1.New)
-	switch config.Crypt {
+	pass := pbkdf2.Key([]byte(cfg.Key), []byte(SALT), 4096, 32, sha1.New)
+	switch cfg.Crypt {
 	case "sm4":
-		config.block, _ = kcp.NewSM4BlockCrypt(pass[:16])
+		cfg.block, _ = kcp.NewSM4BlockCrypt(pass[:16])
 	case "tea":
-		config.block, _ = kcp.NewTEABlockCrypt(pass[:16])
+		cfg.block, _ = kcp.NewTEABlockCrypt(pass[:16])
 	case "xor":
-		config.block, _ = kcp.NewSimpleXORBlockCrypt(pass)
+		cfg.block, _ = kcp.NewSimpleXORBlockCrypt(pass)
 	case "none":
-		config.block, _ = kcp.NewNoneBlockCrypt(pass)
+		cfg.block, _ = kcp.NewNoneBlockCrypt(pass)
 	case "aes-128":
-		config.block, _ = kcp.NewAESBlockCrypt(pass[:16])
+		cfg.block, _ = kcp.NewAESBlockCrypt(pass[:16])
 	case "aes-192":
-		config.block, _ = kcp.NewAESBlockCrypt(pass[:24])
+		cfg.block, _ = kcp.NewAESBlockCrypt(pass[:24])
 	case "blowfish":
-		config.block, _ = kcp.NewBlowfishBlockCrypt(pass)
+		cfg.block, _ = kcp.NewBlowfishBlockCrypt(pass)
 	case "twofish":
-		config.block, _ = kcp.NewTwofishBlockCrypt(pass)
+		cfg.block, _ = kcp.NewTwofishBlockCrypt(pass)
 	case "cast5":
-		config.block, _ = kcp.NewCast5BlockCrypt(pass[:16])
+		cfg.block, _ = kcp.NewCast5BlockCrypt(pass[:16])
 	case "3des":
-		config.block, _ = kcp.NewTripleDESBlockCrypt(pass[:24])
+		cfg.block, _ = kcp.NewTripleDESBlockCrypt(pass[:24])
 	case "xtea":
-		config.block, _ = kcp.NewXTEABlockCrypt(pass[:16])
+		cfg.block, _ = kcp.NewXTEABlockCrypt(pass[:16])
 	case "salsa20":
-		config.block, _ = kcp.NewSalsa20BlockCrypt(pass)
+		cfg.block, _ = kcp.NewSalsa20BlockCrypt(pass)
 	default:
-		config.Crypt = "aes"
-		config.block, _ = kcp.NewAESBlockCrypt(pass)
+		cfg.Crypt = "aes"
+		cfg.block, _ = kcp.NewAESBlockCrypt(pass)
 	}
+
+	log.Debugf("encryption: %v", cfg.Crypt)
+	log.Debugf("nodelay parameters: %v,%v,%v,%v", cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion)
+	log.Debugf("sndwnd: %v    recvwnd: %v", cfg.SndWnd, cfg.RcvWnd)
+	log.Debugf("compression: %v", !cfg.NoComp)
+	log.Debugf("mtu: %v", cfg.MTU)
+	log.Debugf("datashard: %v   parityshard: %v", cfg.DataShard, cfg.ParityShard)
+	log.Debugf("acknodelay: %v", cfg.AckNodelay)
+	log.Debugf("dscp: %v", cfg.DSCP)
+	log.Debugf("sockbuf: %v", cfg.SockBuf)
+	log.Debugf("keepalive: %v", cfg.KeepAlive)
 }
