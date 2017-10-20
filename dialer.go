@@ -50,6 +50,7 @@ func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (
 			log.Errorf("Unable to set WriteBuffer:: %v", err)
 		}
 
+		log.Debugf("Connected with KCP: %v -> %v", kcpconn.LocalAddr(), kcpconn.RemoteAddr())
 		return kcpconn, nil
 	}
 
