@@ -8,24 +8,19 @@ import (
 	"github.com/getlantern/cmux"
 	"github.com/getlantern/errors"
 	"github.com/xtaci/kcp-go"
-	"github.com/xtaci/smux"
 )
 
 // DialerConfig configures dialing
 type DialerConfig struct {
-	CommonConfig
-	Conn        int `json:"conn"`
-	AutoExpire  int `json:"autoexpire"`
-	ScavengeTTL int `json:"scavengettl"`
+	CommonConfig `mapstructure:",squash"`
+	Conn         int `json:"conn"`
+	AutoExpire   int `json:"autoexpire"`
+	ScavengeTTL  int `json:"scavengettl"`
 }
 
 // Dialer creates a new dialer function
 func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (net.Conn, error) {
 	cfg.applyDefaults()
-
-	smuxConfig := smux.DefaultConfig()
-	smuxConfig.MaxReceiveBuffer = cfg.SockBuf
-	smuxConfig.KeepAliveInterval = time.Duration(cfg.KeepAlive) * time.Second
 
 	dialKCP := func(ctx context.Context, network, addr string) (net.Conn, error) {
 		kcpconn, err := kcp.DialWithOptions(addr, cfg.block, cfg.DataShard, cfg.ParityShard)
@@ -41,14 +36,29 @@ func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (
 		kcpconn.SetACKNoDelay(cfg.AckNodelay)
 
 		if err := kcpconn.SetDSCP(cfg.DSCP); err != nil {
-			log.Errorf("Unable to set DSCP: %v", err)
+			log.Debugf("Unable to set DSCP: %v", err)
 		}
 		if err := kcpconn.SetReadBuffer(cfg.SockBuf); err != nil {
-			log.Errorf("Unable to set ReadBuffer: %v", err)
+			log.Debugf("Unable to set ReadBuffer: %v", err)
 		}
 		if err := kcpconn.SetWriteBuffer(cfg.SockBuf); err != nil {
-			log.Errorf("Unable to set WriteBuffer:: %v", err)
+			log.Debugf("Unable to set WriteBuffer:: %v", err)
 		}
+
+		log.Debugf("encryption: %v", cfg.Crypt)
+		log.Debugf("nodelay parameters: %v, %v, %v, %v", cfg.NoDelay, cfg.Interval, cfg.Resend, cfg.NoCongestion)
+		log.Debugf("remote address: %v", addr)
+		log.Debugf("sndwnd: %v    recvwnd: %v", cfg.SndWnd, cfg.RcvWnd)
+		log.Debugf("compression: %v", !cfg.NoComp)
+		log.Debugf("mtu: %v", cfg.MTU)
+		log.Debugf("datashard: %v   parityshard: %v", cfg.DataShard, cfg.ParityShard)
+		log.Debugf("acknodelay: %v", cfg.AckNodelay)
+		log.Debugf("dscp: %v", cfg.DSCP)
+		log.Debugf("sockbuf: %v", cfg.SockBuf)
+		log.Debugf("keepalive: %v", cfg.KeepAlive)
+		log.Debugf("conn: %v", cfg.Conn)
+		log.Debugf("autoexpire: %v", cfg.AutoExpire)
+		log.Debugf("scavengettl: %v", cfg.ScavengeTTL)
 
 		log.Debugf("Connected with KCP: %v -> %v", kcpconn.LocalAddr(), kcpconn.RemoteAddr())
 		return kcpconn, nil
