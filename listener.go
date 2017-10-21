@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/getlantern/cmux"
-	"github.com/xtaci/kcp-go"
+	"github.com/getlantern/kcp-go"
 )
 
 // ListenerConfig configures listening
