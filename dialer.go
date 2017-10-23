@@ -14,14 +14,13 @@ import (
 // DialerConfig configures dialing
 type DialerConfig struct {
 	CommonConfig `mapstructure:",squash"`
-	Conn         int                `json:"conn"`
-	AutoExpire   int                `json:"autoexpire"`
-	ScavengeTTL  int                `json:"scavengettl"`
-	Balancer     *balancer.Balancer `json:"-"`
+	Conn         int `json:"conn"`
+	AutoExpire   int `json:"autoexpire"`
+	ScavengeTTL  int `json:"scavengettl"`
 }
 
 // Dialer creates a new dialer function
-func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (net.Conn, error) {
+func Dialer(bal *balancer.Balancer, cfg *DialerConfig) func(ctx context.Context, network, addr string) (net.Conn, error) {
 	cfg.applyDefaults()
 
 	log.Debugf("conn: %v", cfg.Conn)
@@ -29,10 +28,7 @@ func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (
 	log.Debugf("scavengettl: %v", cfg.ScavengeTTL)
 
 	dialKCP := func(ctx context.Context, network, addr string) (net.Conn, error) {
-		forceRedial := false
-		if cfg.Balancer != nil {
-			forceRedial = cfg.Balancer.ForceRedial()
-		}
+		forceRedial := bal != nil && bal.ForceRedial()
 
 		kcpconn, err := kcp.DialWithOptions(addr, cfg.block, cfg.DataShard, cfg.ParityShard)
 		if err != nil {
