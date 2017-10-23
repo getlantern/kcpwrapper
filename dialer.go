@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/getlantern/balancer"
 	"github.com/getlantern/cmux"
 	"github.com/getlantern/errors"
 	"github.com/getlantern/kcp-go"
@@ -13,9 +14,10 @@ import (
 // DialerConfig configures dialing
 type DialerConfig struct {
 	CommonConfig `mapstructure:",squash"`
-	Conn         int `json:"conn"`
-	AutoExpire   int `json:"autoexpire"`
-	ScavengeTTL  int `json:"scavengettl"`
+	Conn         int                `json:"conn"`
+	AutoExpire   int                `json:"autoexpire"`
+	ScavengeTTL  int                `json:"scavengettl"`
+	Balancer     *balancer.Balancer `json:"-"`
 }
 
 // Dialer creates a new dialer function
@@ -27,6 +29,11 @@ func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (
 	log.Debugf("scavengettl: %v", cfg.ScavengeTTL)
 
 	dialKCP := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		forceRedial := false
+		if cfg.Balancer != nil {
+			forceRedial = cfg.Balancer.ForceRedial()
+		}
+
 		kcpconn, err := kcp.DialWithOptions(addr, cfg.block, cfg.DataShard, cfg.ParityShard)
 		if err != nil {
 			return nil, errors.New("Unable to dial KCP: %v", err)
