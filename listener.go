@@ -14,8 +14,9 @@ type ListenerConfig struct {
 	Listen string `json:"listen"`
 }
 
-// Listen listens with the given ListenerConfig
-func Listen(cfg *ListenerConfig) (net.Listener, error) {
+// Listen listens with the given ListenerConfig. onConn is an optional function
+// that can modify the underlying KCP connections accepted from the listener.
+func Listen(cfg *ListenerConfig, onConn func(net.Conn) net.Conn) (net.Listener, error) {
 	cfg.applyDefaults()
 
 	l, err := kcp.ListenWithOptions(cfg.Listen, cfg.block, cfg.DataShard, cfg.ParityShard)
@@ -32,8 +33,12 @@ func Listen(cfg *ListenerConfig) (net.Listener, error) {
 		log.Errorf("Error setting WriteBuffer: %v", err)
 	}
 
+	if onConn == nil {
+		onConn = func(conn net.Conn) net.Conn { return conn }
+	}
+
 	return cmux.Listen(&cmux.ListenOpts{
-		Listener:          &wrapperListener{Listener: l, cfg: cfg},
+		Listener:          &wrapperListener{Listener: l, cfg: cfg, onConn: onConn},
 		BufferSize:        cfg.SockBuf,
 		KeepAliveInterval: time.Duration(cfg.KeepAlive) * time.Second,
 	}), nil
@@ -41,7 +46,8 @@ func Listen(cfg *ListenerConfig) (net.Listener, error) {
 
 type wrapperListener struct {
 	*kcp.Listener
-	cfg *ListenerConfig
+	cfg    *ListenerConfig
+	onConn func(net.Conn) net.Conn
 }
 
 func (l *wrapperListener) Accept() (net.Conn, error) {
@@ -58,8 +64,8 @@ func (l *wrapperListener) Accept() (net.Conn, error) {
 	conn.SetACKNoDelay(l.cfg.AckNodelay)
 
 	if l.cfg.NoComp {
-		return conn, nil
+		return l.onConn(conn), nil
 	}
 
-	return wrapSnappy(conn), nil
+	return wrapSnappy(l.onConn(conn)), nil
 }
