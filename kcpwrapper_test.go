@@ -87,7 +87,7 @@ func TestRoundTrip(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		echoText := fmt.Sprintf("Hello Number %d", i)
 		go func() {
-			_conn, err := Dialer(dcfg)(context.Background(), "doesntmatter", l.Addr().String())
+			_conn, err := Dialer(dcfg, nil)(context.Background(), "doesntmatter", l.Addr().String())
 			if err != nil {
 				resultCh <- err
 			}

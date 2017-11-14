@@ -19,12 +19,16 @@ type DialerConfig struct {
 }
 
 // Dialer creates a new dialer function
-func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (net.Conn, error) {
+func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.Context, network, addr string) (net.Conn, error) {
 	cfg.applyDefaults()
 
 	log.Debugf("conn: %v", cfg.Conn)
 	log.Debugf("autoexpire: %v", cfg.AutoExpire)
 	log.Debugf("scavengettl: %v", cfg.ScavengeTTL)
+
+	if onConn == nil {
+		onConn = func(conn net.Conn) net.Conn { return conn }
+	}
 
 	dialKCP := func(ctx context.Context, network, addr string) (net.Conn, error) {
 		kcpconn, err := kcp.DialWithOptions(addr, cfg.block, cfg.DataShard, cfg.ParityShard)
@@ -53,7 +57,7 @@ func Dialer(cfg *DialerConfig) func(ctx context.Context, network, addr string) (
 		if cfg.NoComp {
 			return kcpconn, nil
 		}
-		return wrapSnappy(kcpconn), nil
+		return wrapSnappy(onConn(kcpconn)), nil
 	}
 
 	return cmux.Dialer(&cmux.DialerOpts{
