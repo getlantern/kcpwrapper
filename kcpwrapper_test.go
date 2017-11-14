@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"net"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -57,7 +59,11 @@ func TestRoundTrip(t *testing.T) {
 		ScavengeTTL:  600,
 	}
 
-	_l, err := Listen(lcfg)
+	acceptedConns := int64(0)
+	_l, err := Listen(lcfg, func(conn net.Conn) net.Conn {
+		atomic.AddInt64(&acceptedConns, 1)
+		return conn
+	})
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -81,7 +87,7 @@ func TestRoundTrip(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		echoText := fmt.Sprintf("Hello Number %d", i)
 		go func() {
-			_conn, err := Dialer(dcfg)(context.Background(), "doesntmatter", l.Addr().String())
+			_conn, err := Dialer(dcfg, nil)(context.Background(), "doesntmatter", l.Addr().String())
 			if err != nil {
 				resultCh <- err
 			}
@@ -112,4 +118,6 @@ func TestRoundTrip(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		assert.NoError(t, <-resultCh)
 	}
+
+	assert.EqualValues(t, numClients, atomic.LoadInt64(&acceptedConns))
 }
