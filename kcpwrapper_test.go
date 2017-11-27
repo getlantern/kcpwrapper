@@ -11,15 +11,27 @@ import (
 	"time"
 
 	"github.com/getlantern/fdcount"
+	"github.com/getlantern/idletiming"
 	"github.com/getlantern/keyman"
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	numClients = 100
-)
+func TestNormal(t *testing.T) {
+	doRoundTrip(t, 100, 100, nil)
+}
 
-func TestRoundTrip(t *testing.T) {
+func TestTimeout(t *testing.T) {
+	// In this test, only the 1st connection is actually accepted, the 2nd one
+	// stays in limbo. Usually, that would cause the test to hang, but we wrap the
+	// underlying KCP connection with an idletiming Conn, which causes write and
+	// read deadlines to automatically get set which causes the connection to
+	// eventually time out.
+	doRoundTrip(t, 2, 1, func(conn net.Conn) net.Conn {
+		return idletiming.Conn(conn, 250*time.Millisecond, nil)
+	})
+}
+
+func doRoundTrip(t *testing.T, numClients int, numSuccesses int, onConn func(net.Conn) net.Conn) {
 	_, fdc, err := fdcount.Matching("TCP")
 	if err != nil {
 		t.Fatal(err)
@@ -34,7 +46,13 @@ func TestRoundTrip(t *testing.T) {
 		return
 	}
 	cert, err := pk.TLSCertificateFor(time.Now().Add(365*24*time.Hour), true, nil, "kcpwrapper", "127.0.0.1")
+	if !assert.NoError(t, err) {
+		return
+	}
 	keypair, err := tls.X509KeyPair(cert.PEMEncoded(), pk.PEMEncoded())
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	cfg := CommonConfig{
 		DataShard:   10,
@@ -73,7 +91,7 @@ func TestRoundTrip(t *testing.T) {
 	defer l.Close()
 
 	go func() {
-		for {
+		for i := 0; i < numSuccesses; i++ {
 			conn, acceptErr := l.Accept()
 			if acceptErr != nil {
 				t.Logf("Unable to accept: %v", acceptErr)
@@ -87,7 +105,7 @@ func TestRoundTrip(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		echoText := fmt.Sprintf("Hello Number %d", i)
 		go func() {
-			_conn, err := Dialer(dcfg, nil)(context.Background(), "doesntmatter", l.Addr().String())
+			_conn, err := Dialer(dcfg, onConn)(context.Background(), "doesntmatter", l.Addr().String())
 			if err != nil {
 				resultCh <- err
 			}
@@ -116,7 +134,13 @@ func TestRoundTrip(t *testing.T) {
 	}
 
 	for i := 0; i < numClients; i++ {
-		assert.NoError(t, <-resultCh)
+		err := <-resultCh
+		if i < numSuccesses {
+			assert.NoError(t, err)
+		} else {
+			log.Debugf("Got expected error: %v", err)
+			assert.Error(t, err)
+		}
 	}
 
 	assert.EqualValues(t, numClients, atomic.LoadInt64(&acceptedConns))
