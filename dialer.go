@@ -19,7 +19,7 @@ type DialerConfig struct {
 }
 
 // Dialer creates a new dialer function
-func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.Context, network, addr string) (net.Conn, error) {
+func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.Context, network, addr string) (cmux.Conn, error) {
 	cfg.applyDefaults()
 
 	log.Debugf("conn: %v", cfg.Conn)
