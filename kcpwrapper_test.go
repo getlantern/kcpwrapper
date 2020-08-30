@@ -76,7 +76,7 @@ func TestRoundTrip(t *testing.T) {
 		for {
 			conn, acceptErr := l.Accept()
 			if acceptErr != nil {
-				t.Logf("Unable to accept: %v", acceptErr)
+				log.Debugf("Unable to accept: %v", acceptErr)
 				continue
 			}
 			go io.Copy(conn, conn)
@@ -87,7 +87,7 @@ func TestRoundTrip(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		echoText := fmt.Sprintf("Hello Number %d", i)
 		go func() {
-			_conn, err := Dialer(dcfg, nil)(context.Background(), "doesntmatter", l.Addr().String())
+			_conn, err := Dialer(dcfg, nil)(context.Background(), l.Addr().String())
 			if err != nil {
 				resultCh <- err
 			}

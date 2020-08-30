@@ -19,7 +19,7 @@ type DialerConfig struct {
 }
 
 // Dialer creates a new dialer function
-func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.Context, network, addr string) (net.Conn, error) {
+func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.Context, addr string) (net.Conn, error) {
 	cfg.applyDefaults()
 
 	log.Debugf("conn: %v", cfg.Conn)
@@ -30,7 +30,7 @@ func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.
 		onConn = func(conn net.Conn) net.Conn { return conn }
 	}
 
-	dialKCP := func(ctx context.Context, network, addr string) (net.Conn, error) {
+	dialKCP := func(ctx context.Context, _, addr string) (net.Conn, error) {
 		kcpconn, err := kcp.DialWithOptions(addr, cfg.block, cfg.DataShard, cfg.ParityShard)
 		if err != nil {
 			return nil, errors.New("Unable to dial KCP: %v", err)
@@ -60,10 +60,14 @@ func Dialer(cfg *DialerConfig, onConn func(net.Conn) net.Conn) func(ctx context.
 		return wrapSnappy(onConn(kcpconn)), nil
 	}
 
-	return cmux.Dialer(&cmux.DialerOpts{
+	dialer := cmux.Dialer(&cmux.DialerOpts{
 		Dial:              dialKCP,
 		PoolSize:          cfg.Conn,
 		BufferSize:        cfg.SockBuf,
 		KeepAliveInterval: time.Duration(cfg.KeepAlive) * time.Second,
 	})
+
+	return func(ctx context.Context, addr string) (net.Conn, error) {
+		return dialer(ctx, "unused", addr)
+	}
 }
