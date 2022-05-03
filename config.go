@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/getlantern/golog"
-	kcp "github.com/getlantern/kcp-go"
+	kcp "github.com/getlantern/kcp-go/v5"
 	"golang.org/x/crypto/pbkdf2"
 )
 

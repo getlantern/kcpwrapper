@@ -7,7 +7,7 @@ import (
 
 	"github.com/getlantern/cmux"
 	"github.com/getlantern/errors"
-	"github.com/getlantern/kcp-go"
+	"github.com/getlantern/kcp-go/v5"
 )
 
 // DialerConfig configures dialing
