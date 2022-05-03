@@ -26,8 +26,8 @@ github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55 h1:XYzSdCbkzOC0F
 github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55/go.mod h1:6mmzY2kW1TOOrVy+r41Za2MxXM+hhqTtY3oBKd2AgFA=
 github.com/getlantern/iptool v0.0.0-20210721034953-519bf8ce0147 h1:/4ibPEIbC7c786Ec5Z8QqTti8MAjjTp/LmfuF6frVDM=
 github.com/getlantern/iptool v0.0.0-20210721034953-519bf8ce0147/go.mod h1:hfspzdRcvJ130tpTPL53/L92gG0pFtvQ6ln35ppwhHE=
-github.com/getlantern/kcp-go v1.0.2-0.20220502191902-98036cf97617 h1:WPCExVaCZ9Fp+4h9THdI9BEPBzAa3390f2sRzIjvtBA=
-github.com/getlantern/kcp-go v1.0.2-0.20220502191902-98036cf97617/go.mod h1:O2pza0g9QJw5KKfeqs9E3ye0P4T9ecyl5VIhBGsJHu8=
+github.com/getlantern/kcp-go/v5 v5.0.0-20220503142114-f0c1cd6e1b54 h1:JqIiaDpL6CLgkq9Mfyd7GXSFm8EvgG0mVUd6I7TxNfw=
+github.com/getlantern/kcp-go/v5 v5.0.0-20220503142114-f0c1cd6e1b54/go.mod h1:KFBWdR0PdEQK0JtGcE1lhAoYFVTRxWDFfYBARPb0t9Q=
 github.com/getlantern/keyman v0.0.0-20180207174507-f55e7280e93a/go.mod h1:FMf0g72BHs14jVcD8i8ubEk4sMB6JdidBn67d44i3ws=
 github.com/getlantern/keyman v0.0.0-20200820153608-cfd0ee278507 h1:pHXVOXcudW0Dxp6rUxv/+V/pXJoygwPLKCZ4LrOtTE8=
 github.com/getlantern/keyman v0.0.0-20200820153608-cfd0ee278507/go.mod h1:FMf0g72BHs14jVcD8i8ubEk4sMB6JdidBn67d44i3ws=

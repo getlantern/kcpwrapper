@@ -7,7 +7,7 @@ require (
 	github.com/getlantern/errors v1.0.1
 	github.com/getlantern/fdcount v0.0.0-20190912142506-f89afd7367c4
 	github.com/getlantern/golog v0.0.0-20210606115803-bce9f9fe5a5f
-	github.com/getlantern/kcp-go v1.0.2-0.20220502191902-98036cf97617
+	github.com/getlantern/kcp-go/v5 v5.0.0-20220503142114-f0c1cd6e1b54
 	github.com/getlantern/keyman v0.0.0-20200820153608-cfd0ee278507
 	github.com/golang/snappy v0.0.1
 	github.com/stretchr/testify v1.7.0
