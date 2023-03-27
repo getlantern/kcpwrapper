@@ -11,7 +11,7 @@ require (
 	github.com/getlantern/keyman v0.0.0-20200820153608-cfd0ee278507
 	github.com/golang/snappy v0.0.1
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/crypto v0.1.0
 )
 
 require (
